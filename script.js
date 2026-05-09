@@ -74,6 +74,12 @@ const elements = {
   memoryLayers: document.querySelector("#memoryLayers"),
   relationshipLens: document.querySelector("#relationshipLens"),
   nextAction: document.querySelector("#nextAction"),
+  evidenceBackdrop: document.querySelector("#evidenceBackdrop"),
+  evidenceSheet: document.querySelector("#evidenceSheet"),
+  evidenceKicker: document.querySelector("#evidenceKicker"),
+  evidenceTitle: document.querySelector("#evidenceTitle"),
+  evidenceBody: document.querySelector("#evidenceBody"),
+  closeEvidenceButton: document.querySelector("#closeEvidenceButton"),
 };
 
 const aiMemoryService = {
@@ -312,6 +318,122 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function sourceDescription(source) {
+  const descriptions = {
+    Voice: "Captured from the user's spoken or typed memory note.",
+    Card: "Extracted from the attached name card in the capture step.",
+    Website: "Matched from an attached website or public company page.",
+    User: "Explicitly selected or confirmed by the user.",
+    Saved: "Loaded from an existing Relata memory.",
+  };
+
+  return descriptions[source] || `Referenced from ${source}.`;
+}
+
+function evidenceForFact(factId) {
+  const fact = appState.contact.facts.find((item) => item.id === factId);
+  if (!fact) return null;
+  const attachedSource = appState.contact.sources.find((source) => {
+    if (fact.source === "Card") return source.type === "Name card";
+    if (fact.source === "Website") return source.type === "Website";
+    return (
+      source.type.toLowerCase().includes(fact.source.toLowerCase()) ||
+      source.label.toLowerCase().includes(String(fact.value).toLowerCase())
+    );
+  });
+
+  return {
+    kicker: "User-provided fact",
+    title: fact.label,
+    rows: [
+      ["Value", fact.value],
+      ["Source", fact.source],
+      ["Confidence", fact.confidence === "strong" ? "High" : "Medium"],
+      ["Why it appears here", sourceDescription(fact.source)],
+    ],
+    quote:
+      fact.source === "Voice"
+        ? appState.contact.rawNote
+        : attachedSource?.label || "Source material attached during capture.",
+  };
+}
+
+function evidenceForFinding(findingId) {
+  const finding = appState.contact.findings.find((item) => item.id === findingId);
+  if (!finding) return null;
+
+  return {
+    kicker: "Research suggestion",
+    title: finding.category,
+    rows: [
+      ["Suggestion", finding.text],
+      ["Source", finding.source],
+      ["Review status", finding.accepted ? "Accepted into profile" : "Waiting for review"],
+      ["Why it appears here", "Generated after the user confirmed the contact draft."],
+    ],
+    quote: `${finding.source}: ${finding.text}`,
+  };
+}
+
+function evidenceForRelationship(relationshipId) {
+  const relationship = appState.contact.relationships.find(
+    (item) => item.id === relationshipId,
+  );
+  if (!relationship) return null;
+
+  return {
+    kicker: relationship.group === "strong" ? "Strong relationship signal" : "Possible relationship signal",
+    title: relationship.name,
+    rows: [
+      ["Reason", relationship.reason],
+      ["Strength", titleCase(relationship.strength)],
+      ["Status", relationship.status === "confirmed" ? "Confirmed link" : "Needs user review"],
+      ["Why it appears here", "Relata compared the new contact against memory notes and saved contacts."],
+    ],
+    quote: appState.contact.rawNote || "Existing saved contacts and profile context.",
+  };
+}
+
+function showEvidence(details) {
+  if (!details) return;
+
+  elements.evidenceKicker.textContent = details.kicker;
+  elements.evidenceTitle.textContent = details.title;
+  elements.evidenceBody.innerHTML = `
+    <div class="evidence-quote">
+      <p>${escapeHtml(details.quote)}</p>
+    </div>
+    <div class="evidence-rows">
+      ${details.rows
+        .map(
+          ([label, value]) => `
+            <article>
+              <span>${escapeHtml(label)}</span>
+              <strong>${escapeHtml(value)}</strong>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+
+  elements.evidenceBackdrop.hidden = false;
+  elements.evidenceSheet.hidden = false;
+  requestAnimationFrame(() => {
+    elements.evidenceBackdrop.classList.add("show");
+    elements.evidenceSheet.classList.add("show");
+  });
+}
+
+function closeEvidence() {
+  elements.evidenceBackdrop.classList.remove("show");
+  elements.evidenceSheet.classList.remove("show");
+  window.setTimeout(() => {
+    elements.evidenceBackdrop.hidden = true;
+    elements.evidenceSheet.hidden = true;
+  }, 180);
 }
 
 function loadSavedContacts() {
@@ -632,7 +754,7 @@ function renderReview() {
             <p>${escapeHtml(fact.label)}</p>
             <input value="${escapeHtml(fact.value)}" data-fact-id="${escapeHtml(fact.id)}" />
           </label>
-          <button class="source-button" type="button">${escapeHtml(fact.source)}</button>
+          <button class="source-button" type="button" data-fact-source-id="${escapeHtml(fact.id)}">View ${escapeHtml(fact.source)}</button>
         </article>
       `,
     )
@@ -685,9 +807,12 @@ function renderFindings() {
             <strong>${escapeHtml(finding.text)}</strong>
             <small>Source: ${escapeHtml(finding.source)}</small>
           </div>
-          <button type="button" data-finding-id="${escapeHtml(finding.id)}">
+          <div class="suggestion-actions">
+            <button class="source-button" type="button" data-finding-source-id="${escapeHtml(finding.id)}">View source</button>
+            <button type="button" data-finding-id="${escapeHtml(finding.id)}">
             ${finding.accepted ? "Added" : "Accept"}
-          </button>
+            </button>
+          </div>
         </article>
       `,
     )
@@ -724,9 +849,12 @@ function renderRelationshipGroup(title, items, extraClass) {
                 <strong>${escapeHtml(item.name)}</strong>
                 <p>${escapeHtml(item.reason)}</p>
               </div>
-              <button type="button" data-relationship-id="${escapeHtml(item.id)}">
+              <div class="link-actions">
+                <button type="button" data-relationship-source-id="${escapeHtml(item.id)}">Why this link</button>
+                <button type="button" data-relationship-id="${escapeHtml(item.id)}">
                 ${item.status === "confirmed" ? "Linked" : item.group === "strong" ? "Confirm" : "Later"}
-              </button>
+                </button>
+              </div>
             </article>
           `,
         )
@@ -935,7 +1063,19 @@ elements.factList?.addEventListener("input", (event) => {
   }
 });
 
+elements.factList?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-fact-source-id]");
+  if (!button) return;
+  showEvidence(evidenceForFact(button.dataset.factSourceId));
+});
+
 elements.suggestionList?.addEventListener("click", (event) => {
+  const sourceButton = event.target.closest("[data-finding-source-id]");
+  if (sourceButton) {
+    showEvidence(evidenceForFinding(sourceButton.dataset.findingSourceId));
+    return;
+  }
+
   const button = event.target.closest("[data-finding-id]");
   if (!button) return;
 
@@ -951,6 +1091,12 @@ elements.suggestionList?.addEventListener("click", (event) => {
 });
 
 elements.linkGroups?.addEventListener("click", (event) => {
+  const sourceButton = event.target.closest("[data-relationship-source-id]");
+  if (sourceButton) {
+    showEvidence(evidenceForRelationship(sourceButton.dataset.relationshipSourceId));
+    return;
+  }
+
   const button = event.target.closest("[data-relationship-id]");
   if (!button) return;
 
@@ -963,6 +1109,15 @@ elements.linkGroups?.addEventListener("click", (event) => {
     renderRelationships();
     renderProfile();
     showToast(relationship.status === "confirmed" ? "Relationship linked" : "Link saved for later");
+  }
+});
+
+elements.closeEvidenceButton?.addEventListener("click", closeEvidence);
+elements.evidenceBackdrop?.addEventListener("click", closeEvidence);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !elements.evidenceSheet.hidden) {
+    closeEvidence();
   }
 });
 
