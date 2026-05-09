@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relata</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" aria-label="AI contact list prototype">
+      <section class="phone-frame">
+        <header class="top-bar">
+          <button class="icon-button" id="homeButton" aria-label="Back to memory list">
+            <span class="icon-chevron"></span>
+          </button>
+          <div>
+            <p class="eyebrow">New memory</p>
+            <h1>Relata</h1>
+          </div>
+          <button class="icon-button" aria-label="More options">
+            <span class="dot-menu"></span>
+          </button>
+        </header>
+
+        <nav class="progress-tabs" aria-label="Contact creation steps">
+          <button class="step active" data-step="capture">
+            <span>1</span>
+            Capture
+          </button>
+          <button class="step" data-step="review">
+            <span>2</span>
+            Review
+          </button>
+          <button class="step" data-step="research">
+            <span>3</span>
+            Research
+          </button>
+          <button class="step" data-step="network">
+            <span>4</span>
+            Links
+          </button>
+        </nav>
+
+        <div class="screen-stack">
+          <section class="screen" id="home" aria-labelledby="home-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Relata memory</p>
+                <h2 id="home-title">Saved people</h2>
+              </div>
+              <span class="status-pill" id="savedCount">0 saved</span>
+            </div>
+
+            <div class="home-summary">
+              <p class="panel-label">Relationship intelligence</p>
+              <h3>Every saved contact becomes context for the next one.</h3>
+              <p>New memories can now compare against confirmed people, companies, and notes already in this prototype.</p>
+            </div>
+
+            <div class="saved-list" id="savedList">
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" id="seedContactsButton">Add samples</button>
+              <button class="primary-button" id="newContactButton" data-next="capture">New contact</button>
+            </div>
+          </section>
+
+          <section class="screen active" id="capture" aria-labelledby="capture-title">
+            <div class="assistant-panel">
+              <div class="ai-mark" aria-hidden="true">
+                <span></span>
+              </div>
+              <div>
+                <p class="panel-label">Relata</p>
+                <h2 id="capture-title">Tell me what you remember.</h2>
+                <p>
+                  Speak naturally, paste details, add a card photo, or drop a link.
+                </p>
+              </div>
+            </div>
+
+            <div class="voice-composer">
+              <div class="voice-rings" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <button class="mic-button" aria-label="Start voice input"></button>
+              </div>
+              <p class="listening-label">Ready to listen</p>
+            </div>
+
+            <label class="memory-input">
+              <span>Memory note</span>
+              <textarea id="memoryNote">Met Daniel at the Singapore fintech dinner. He leads partnerships at Meridian Pay. Mentioned he knows Clara from NUS and is exploring bank distribution partners.</textarea>
+            </label>
+
+            <div class="lens-control" aria-label="Relationship lens">
+              <p>Relationship lens</p>
+              <div class="lens-options">
+                <button class="active" data-lens="Business development">BD</button>
+                <button data-lens="Investor / Founder">Investor</button>
+                <button data-lens="Recruiting">Recruit</button>
+                <button data-lens="Personal network">Personal</button>
+              </div>
+            </div>
+
+            <div class="quick-add">
+              <input id="sourceInput" type="text" placeholder="Paste a website, LinkedIn, email signature, or note" />
+              <button class="secondary-button compact" id="addSourceButton">Add</button>
+            </div>
+
+            <div class="source-strip" id="sourceStrip" aria-label="Attached source materials">
+            </div>
+
+            <div class="action-row">
+              <button class="secondary-button" id="sampleSourceButton">Sample card</button>
+              <button class="primary-button" data-next="review">Extract draft</button>
+            </div>
+          </section>
+
+          <section class="screen" id="review" aria-labelledby="review-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Layer 1</p>
+                <h2 id="review-title">User-provided facts</h2>
+              </div>
+              <span class="status-pill">Needs confirm</span>
+            </div>
+
+            <div class="profile-summary">
+              <div class="avatar" id="reviewAvatar">DL</div>
+              <div>
+                <h3 id="reviewName">Daniel Lee</h3>
+                <p id="reviewSubtitle">Partnerships Lead at Meridian Pay</p>
+              </div>
+            </div>
+
+            <div class="fact-list" id="factList">
+            </div>
+
+            <div class="confidence-band">
+              <span></span>
+              <p id="confidenceText">4 confirmed-looking facts, 1 possible relationship mention.</p>
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" data-next="capture">Edit input</button>
+              <button class="primary-button" id="confirmContactButton" data-next="research">Confirm contact</button>
+            </div>
+          </section>
+
+          <section class="screen" id="research" aria-labelledby="research-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Layer 2</p>
+                <h2 id="research-title">Deep research</h2>
+              </div>
+              <button class="pause-button" id="pauseResearch">Pause</button>
+            </div>
+
+            <div class="research-orbit" aria-hidden="true">
+              <div></div>
+            </div>
+
+            <div class="research-status">
+              <p class="panel-label">Research running</p>
+              <h3 id="researchTitle">Using confirmed facts to enrich Daniel’s profile.</h3>
+              <p>
+                The app is checking public pages, company data, and profile matches.
+              </p>
+            </div>
+
+            <div class="research-feed" id="researchFeed">
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" data-next="review">Back</button>
+              <button class="primary-button" data-next="enrichment">Review findings</button>
+            </div>
+          </section>
+
+          <section class="screen" id="enrichment" aria-labelledby="enrichment-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Layer 2</p>
+                <h2 id="enrichment-title">Suggested enrichments</h2>
+              </div>
+              <span class="status-pill" id="findingCount">3 found</span>
+            </div>
+
+            <div class="suggestion-list" id="suggestionList">
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" data-next="research">Research</button>
+              <button class="primary-button" data-next="network">Find links</button>
+            </div>
+          </section>
+
+          <section class="screen" id="network" aria-labelledby="network-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Layer 3</p>
+                <h2 id="network-title">Relationship links</h2>
+              </div>
+              <span class="status-pill">Review</span>
+            </div>
+
+            <div class="network-map" aria-label="Relationship map">
+              <div class="person-node main" id="mapMainNode">Daniel</div>
+              <div class="person-node top" id="mapTopNode">Clara</div>
+              <div class="person-node right" id="mapRightNode">HSBC</div>
+              <div class="person-node bottom" id="mapBottomNode">NUS</div>
+              <span class="line line-a"></span>
+              <span class="line line-b"></span>
+              <span class="line line-c"></span>
+            </div>
+
+            <div class="link-groups" id="linkGroups">
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" data-next="enrichment">Back</button>
+              <button class="primary-button" data-next="profile">Save profile</button>
+            </div>
+          </section>
+
+          <section class="screen" id="profile" aria-labelledby="profile-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Saved contact</p>
+                <h2 id="profileTitle">Daniel Lee</h2>
+              </div>
+              <span class="status-pill">Complete</span>
+            </div>
+
+            <div class="profile-hero">
+              <div class="avatar large" id="profileAvatar">DL</div>
+              <div>
+                <h3 id="profileRole">Partnerships Lead</h3>
+                <p id="profileCompany">Meridian Pay</p>
+              </div>
+            </div>
+
+            <div class="memory-layers" id="memoryLayers">
+            </div>
+
+            <div class="next-note">
+              <p class="panel-label">Relationship lens</p>
+              <h3 id="relationshipLens">Business development</h3>
+              <p id="nextAction">Best next action: follow up about bank partner introductions.</p>
+            </div>
+
+            <div class="action-row sticky-actions">
+              <button class="secondary-button" data-next="network">Links</button>
+              <button class="primary-button" id="saveContactButton" data-next="home">Save memory</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
