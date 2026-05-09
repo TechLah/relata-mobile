@@ -12,7 +12,36 @@ Relata is a mobile-first prototype for capturing a new contact from natural memo
 - Mock deep research enrichment
 - Relationship suggestions
 - Saved contact memory using local storage
+- Demo-ready mobile web flow
+- PWA metadata for add-to-home-screen testing
 
-## Suggested Repository
+## Demo Flow
 
-`relata-mobile`
+1. Open the app.
+2. Tap `Demo` to load the Daniel Lee scenario and sample network.
+3. Tap `Extract draft`.
+4. Confirm the user-provided facts.
+5. Review deep research findings.
+6. Find relationship links.
+7. Save the profile into Relata memory.
+
+## Local Development
+
+The app is currently a static mobile web prototype.
+
+```bash
+npm install
+npm run dev
+```
+
+For a quick local file preview, open `index.html` directly in a browser. Service worker/PWA behavior only works from an HTTP server, not from `file://`.
+
+## Deployment
+
+Recommended demo deployment:
+
+- Vercel
+- Netlify
+- GitHub Pages
+
+Repository: `relata-mobile`
