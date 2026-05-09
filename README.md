@@ -40,8 +40,16 @@ For a quick local file preview, open `index.html` directly in a browser. Service
 
 Recommended demo deployment:
 
+- GitHub Pages
 - Vercel
 - Netlify
-- GitHub Pages
 
 Repository: `relata-mobile`
+
+### GitHub Pages
+
+This repo includes a GitHub Pages workflow. After pushing to `main`, enable GitHub Pages with **Source: GitHub Actions** in the repository settings.
+
+Expected demo URL:
+
+`https://techlah.github.io/relata-mobile/`
