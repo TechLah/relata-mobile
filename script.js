@@ -4,15 +4,17 @@ const nextButtons = [...document.querySelectorAll("[data-next]")];
 const pauseButton = document.querySelector("#pauseResearch");
 const researchOrbit = document.querySelector(".research-orbit");
 const STORAGE_KEY = "relata.contacts";
+const DEMO_NOTE =
+  "Met Daniel Lee at the Singapore fintech dinner. He leads partnerships at Meridian Pay. Mentioned he knows Clara from NUS and is exploring bank distribution partners.";
 
 const appState = {
   savedContacts: [],
+  demoPrepared: false,
   contact: {
     id: `contact-${Date.now()}`,
     confirmed: false,
     lens: "Business development",
-    rawNote:
-      "Met Daniel at the Singapore fintech dinner. He leads partnerships at Meridian Pay. Mentioned he knows Clara from NUS and is exploring bank distribution partners.",
+    rawNote: DEMO_NOTE,
     sources: [
       {
         id: "src-card",
@@ -34,8 +36,12 @@ const appState = {
 };
 
 const elements = {
+  phoneFrame: document.querySelector(".phone-frame"),
   memoryNote: document.querySelector("#memoryNote"),
   homeButton: document.querySelector("#homeButton"),
+  demoModeButton: document.querySelector("#demoModeButton"),
+  demoStatus: document.querySelector("#demoStatus"),
+  toast: document.querySelector("#toast"),
   savedCount: document.querySelector("#savedCount"),
   savedList: document.querySelector("#savedList"),
   seedContactsButton: document.querySelector("#seedContactsButton"),
@@ -340,6 +346,43 @@ function resetContact() {
   renderAll();
 }
 
+function prepareDemoContact() {
+  appState.contact = {
+    id: `contact-demo-${Date.now()}`,
+    confirmed: false,
+    lens: "Business development",
+    rawNote: DEMO_NOTE,
+    sources: [
+      {
+        id: "src-card",
+        type: "Name card",
+        label: "daniel-card.jpg",
+        icon: "card-icon",
+      },
+      {
+        id: "src-web",
+        type: "Website",
+        label: "meridianpay.co",
+        icon: "link-icon",
+      },
+    ],
+    facts: [],
+    findings: [],
+    relationships: [],
+  };
+  elements.memoryNote.value = DEMO_NOTE;
+  elements.sourceInput.value = "";
+  inferContactFromNote();
+}
+
+function prepareDemo() {
+  seedSampleContacts();
+  prepareDemoContact();
+  appState.demoPrepared = true;
+  renderDemoStatus("Demo ready: sample network loaded");
+  showToast("Demo setup complete");
+}
+
 function createSavedSnapshot() {
   const name = getFact("Name") || "New Contact";
   const role = getFact("Role") || "Relationship contact";
@@ -421,6 +464,21 @@ function seedSampleContacts() {
   persistSavedContacts();
   buildMockRelationships();
   renderAll();
+}
+
+function showToast(message) {
+  elements.toast.textContent = message;
+  elements.toast.classList.add("show");
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => {
+    elements.toast.classList.remove("show");
+  }, 1800);
+}
+
+function renderDemoStatus(message) {
+  elements.demoStatus.querySelector("p").textContent =
+    message || `${appState.savedContacts.length} saved people available`;
+  elements.demoStatus.classList.toggle("active", appState.demoPrepared);
 }
 
 function loadContactSnapshot(id) {
@@ -532,6 +590,7 @@ function renderSources() {
 
 function renderSavedContacts() {
   elements.savedCount.textContent = `${appState.savedContacts.length} saved`;
+  renderDemoStatus();
 
   if (!appState.savedContacts.length) {
     elements.savedList.innerHTML =
@@ -739,21 +798,33 @@ function showScreen(id) {
   if (id === "review") {
     appState.contact.rawNote = elements.memoryNote.value.trim();
     inferContactFromNote();
+    showToast("Draft extracted from memory");
   }
 
   if (id === "research") {
     appState.contact.confirmed = true;
     renderResearch();
+    showToast("Deep research started");
+  }
+
+  if (id === "enrichment") {
+    showToast("Research findings ready");
+  }
+
+  if (id === "network") {
+    showToast("Relationship links prepared");
   }
 
   if (id === "profile") {
     saveCurrentContact();
     renderProfile();
+    showToast("Profile saved to Relata");
   }
 
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.id === id);
   });
+  elements.phoneFrame.dataset.current = id;
 
   const fallbackMap = {
     enrichment: "research",
@@ -805,18 +876,31 @@ elements.sourceInput?.addEventListener("keydown", (event) => {
 
 elements.sampleSourceButton?.addEventListener("click", () => {
   addSourceFromInput("daniel-card.jpg");
+  showToast("Name card added");
 });
 
 elements.homeButton?.addEventListener("click", () => {
   showScreen("home");
 });
 
+elements.demoModeButton?.addEventListener("click", () => {
+  prepareDemo();
+  showScreen("capture");
+});
+
 elements.seedContactsButton?.addEventListener("click", () => {
   seedSampleContacts();
+  appState.demoPrepared = true;
+  renderDemoStatus("Sample network loaded");
+  showToast("Sample contacts added");
 });
 
 elements.newContactButton?.addEventListener("click", () => {
-  resetContact();
+  if (appState.demoPrepared) {
+    prepareDemoContact();
+  } else {
+    resetContact();
+  }
 });
 
 elements.saveContactButton?.addEventListener("click", () => {
@@ -862,6 +946,7 @@ elements.suggestionList?.addEventListener("click", (event) => {
     finding.accepted = !finding.accepted;
     renderFindings();
     renderProfile();
+    showToast(finding.accepted ? "Finding added" : "Finding removed");
   }
 });
 
@@ -877,6 +962,7 @@ elements.linkGroups?.addEventListener("click", (event) => {
       relationship.status === "confirmed" ? "later" : "confirmed";
     renderRelationships();
     renderProfile();
+    showToast(relationship.status === "confirmed" ? "Relationship linked" : "Link saved for later");
   }
 });
 
@@ -888,3 +974,5 @@ pauseButton?.addEventListener("click", () => {
 
 loadSavedContacts();
 inferContactFromNote();
+renderDemoStatus();
+showScreen("home");

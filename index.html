@@ -17,10 +17,15 @@
             <p class="eyebrow">New memory</p>
             <h1>Relata</h1>
           </div>
-          <button class="icon-button" aria-label="More options">
-            <span class="dot-menu"></span>
+          <button class="demo-button" id="demoModeButton" aria-label="Prepare demo data">
+            Demo
           </button>
         </header>
+
+        <div class="demo-status" id="demoStatus">
+          <span></span>
+          <p>Ready for mobile web demo</p>
+        </div>
 
         <nav class="progress-tabs" aria-label="Contact creation steps">
           <button class="step active" data-step="capture">
@@ -42,7 +47,7 @@
         </nav>
 
         <div class="screen-stack">
-          <section class="screen" id="home" aria-labelledby="home-title">
+          <section class="screen active" id="home" aria-labelledby="home-title">
             <div class="section-heading">
               <div>
                 <p class="eyebrow">Relata memory</p>
@@ -52,9 +57,9 @@
             </div>
 
             <div class="home-summary">
-              <p class="panel-label">Relationship intelligence</p>
-              <h3>Every saved contact becomes context for the next one.</h3>
-              <p>New memories can now compare against confirmed people, companies, and notes already in this prototype.</p>
+              <p class="panel-label">AI memory for people</p>
+              <h3>Capture a person, verify the facts, enrich the context, then map the relationship.</h3>
+              <p id="homeDemoLine">Demo scenario: Daniel from Meridian Pay, linked to Clara and bank partner contacts.</p>
             </div>
 
             <div class="saved-list" id="savedList">
@@ -62,11 +67,11 @@
 
             <div class="action-row sticky-actions">
               <button class="secondary-button" id="seedContactsButton">Add samples</button>
-              <button class="primary-button" id="newContactButton" data-next="capture">New contact</button>
+              <button class="primary-button" id="newContactButton" data-next="capture">Start capture</button>
             </div>
           </section>
 
-          <section class="screen active" id="capture" aria-labelledby="capture-title">
+          <section class="screen" id="capture" aria-labelledby="capture-title">
             <div class="assistant-panel">
               <div class="ai-mark" aria-hidden="true">
                 <span></span>
@@ -114,7 +119,7 @@
             </div>
 
             <div class="action-row">
-              <button class="secondary-button" id="sampleSourceButton">Sample card</button>
+              <button class="secondary-button" id="sampleSourceButton">Add card</button>
               <button class="primary-button" data-next="review">Extract draft</button>
             </div>
           </section>
@@ -259,6 +264,7 @@
           </section>
         </div>
       </section>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </main>
 
     <script src="script.js"></script>
